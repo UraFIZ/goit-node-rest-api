@@ -3,6 +3,10 @@ import morgan from "morgan";
 import cors from "cors";
 import { connectToDB, sequelize } from "./config/db.js";
 import contactsRouter from "./routes/contactsRouter.js";
+import authRouter from "./routes/authRouter.js";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 
@@ -10,6 +14,7 @@ app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
 
+app.use("/api/auth", authRouter);
 app.use("/api/contacts", contactsRouter);
 
 app.use((_, res) => {
@@ -24,7 +29,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     await connectToDB();
-    await sequelize.sync(); // Синхронізує моделі з базою даних
+    await sequelize.sync();
     
     app.listen(3000, () => {
       console.log("Server is running. Use our API on port: 3000");

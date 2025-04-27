@@ -1,10 +1,27 @@
 import contactsService from "../services/contactsServices.js";
 
 
-export const getAllContacts = async (_, res, next) => {
+export const getAllContacts = async (req, res, next) => {
   try {
-    const contacts = await contactsService.listContacts();
-    res.status(200).json(contacts);
+    const { id: owner } = req.user;
+    
+    const result = await contactsService.listContacts(owner, req.query);
+    
+    res.status(200).json({
+      status: "success",
+      code: 200,
+      data: {
+        contacts: result.contacts,
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          totalItems: result.totalItems,
+          totalPages: result.totalPages,
+          hasNextPage: result.hasNextPage,
+          hasPreviousPage: result.hasPreviousPage
+        }
+      }
+    });
   } catch (error) {
     next(error);
   }
@@ -30,7 +47,8 @@ export const removeContact = async (req, res, next) => {
 
 export const createContact = async (req, res, next) => {
   try {
-    const newContact = await contactsService.addContact(req.body);
+    const { id: owner } = req.user;
+    const newContact = await contactsService.addContact({ ...req.body, owner });
     res.status(201).json(newContact);
   } catch (error) {
     next(error);
