@@ -7,10 +7,17 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "express": "^4.18.2",
     "joi": "^17.11.0",
     "morgan": "^1.10.0",
+<<<<<<< HEAD
     "nanoid": "^5.1.5"
+=======
+    "pg": "^8.15.6",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.7"
+>>>>>>> d9bf9e2 (init sequelize setup)
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
