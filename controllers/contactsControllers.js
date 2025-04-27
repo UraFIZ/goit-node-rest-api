@@ -63,7 +63,13 @@ export const createContact = async (req, res, next) => {
 export const updateContactById = async (req, res, next) => {
   try {
     const updatedContact = await contactsService.updateContact(req.params.id, req.body);
-    res.status(200).json(updatedContact);
+    console.log(updatedContact);
+    res.status(200).json({
+      id: updatedContact.id,
+      name: updatedContact.name,
+      email: updatedContact.email,
+      phone: updatedContact.phone
+    });
   } catch (error) {
     next(error);
   }
