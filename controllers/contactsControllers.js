@@ -4,11 +4,12 @@ import {
   getContactById,
   removeContact,
   addContact,
-  updateContact
+  updateContact,
+  updateStatusContact
 } from "../services/contactsServices.js";
 
 
-export const getAllContacts = async (req, res, next) => {
+export const getAllContacts = async (_, res, next) => {
   try {
     const contacts = await listContacts();
     res.status(200).json(contacts);
@@ -56,20 +57,24 @@ export const createContact = async (req, res, next) => {
 
 export const updateContactById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const body = req.body;
-    
-    if (Object.keys(body).length === 0) {
-      throw HttpError(400, "Body must have at least one field");
-    }
-    
-    const updatedContact = await updateContact(id, body);
+    const updatedContact = await updateContact(req.params.id, req.body);
     
     if (!updatedContact) {
       throw HttpError(404, "Not found");
     }
     
     res.status(200).json(updatedContact);
+  } catch (error) {
+    next(error);
+  }
+};
+export const updateStatusContact = async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
+    const { favorite } = req.body;
+    
+    const contact = await updateStatusContact(contactId, { favorite });
+    res.json(contact);
   } catch (error) {
     next(error);
   }
