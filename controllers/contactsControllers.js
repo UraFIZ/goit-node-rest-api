@@ -49,7 +49,12 @@ export const createContact = async (req, res, next) => {
   try {
     const { id: owner } = req.user;
     const newContact = await contactsService.addContact({ ...req.body, owner });
-    res.status(201).json(newContact);
+    res.status(201).json({
+      id: newContact.id,
+      name: newContact.name,
+      email: newContact.email,
+      phone: newContact.phone
+    });
   } catch (error) {
     next(error);
   }
