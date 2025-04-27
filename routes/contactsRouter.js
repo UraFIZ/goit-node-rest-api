@@ -3,8 +3,8 @@ import validateBody from "../helpers/validateBody.js";
 import { createContactSchema, updateContactSchema, updateStatusSchema } from "../schemas/contactsSchemas.js";
 import {
   getAllContacts,
-  getOneContact,
-  deleteContact,
+  getContactById,
+  removeContact,
   createContact,
   updateContactById,
   updateStatusContact
@@ -14,9 +14,9 @@ const contactsRouter = express.Router();
 
 contactsRouter.get("/", getAllContacts);
 
-contactsRouter.get("/:id", getOneContact);
+contactsRouter.get("/:id", getContactById);
 
-contactsRouter.delete("/:id", deleteContact);
+contactsRouter.delete("/:id", removeContact);
 
 contactsRouter.post("/", validateBody(createContactSchema), createContact);
 

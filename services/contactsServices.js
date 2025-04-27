@@ -1,7 +1,7 @@
 import Contact from '../models/contact.js';
 import HttpError from '../helpers/HttpError.js';
 
-export async function listContacts() {
+async function listContacts() {
   try {
     const contacts = await Contact.findAll();
     return contacts;
@@ -11,19 +11,20 @@ export async function listContacts() {
   }
 }
 
-export async function getContactById(contactId) {
+async function getContactById(contactId) {
   try {
     const contact = await Contact.findByPk(contactId);
     if (!contact) {
       throw HttpError(404, "Not found");
     }
+    return contact;
   } catch (error) {
     console.error("Error getting contact by ID:", error.message);
     return null;
   }
 }
 
-export async function removeContact(contactId) {
+async function removeContact(contactId) {
   try {
     const contact = await Contact.findByPk(contactId);
     if (!contact) {
@@ -37,7 +38,7 @@ export async function removeContact(contactId) {
   }
 }
 
-export async function addContact(data) {
+async function addContact(data) {
   try {
     const newContact = await Contact.create(data);
     return newContact;
@@ -47,7 +48,7 @@ export async function addContact(data) {
   }
 }
 
-export async function updateContact(contactId, data) {
+async function updateContact(contactId, data) {
   try {
     const contact = await Contact.findByPk(contactId);
     if (!contact) {
@@ -55,13 +56,14 @@ export async function updateContact(contactId, data) {
     }
     
     await contact.update(data);
+    return contact;
   } catch (error) {
     console.error("Error updating contact:", error.message);
     return null;
   }
 }
 
-export const updateStatusContact = async (contactId, { favorite }) => {
+async function updateStatusContact (contactId, { favorite }) {
   const contact = await Contact.findByPk(contactId);
   if (!contact) {
     throw HttpError(404, "Not found");
@@ -69,4 +71,13 @@ export const updateStatusContact = async (contactId, { favorite }) => {
   
   await contact.update({ favorite });
   return contact;
+};
+
+export default {
+  listContacts,
+  getContactById,
+  removeContact,
+  addContact,
+  updateContact,
+  updateStatusContact
 };
