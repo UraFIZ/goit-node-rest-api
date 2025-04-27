@@ -29,7 +29,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     await connectToDB();
-    await sequelize.sync(); // Синхронізує моделі з базою даних
+    await sequelize.sync();
     
     app.listen(3000, () => {
       console.log("Server is running. Use our API on port: 3000");
