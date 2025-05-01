@@ -33,15 +33,7 @@ async function listContacts(owner, query = {}) {
     };
   } catch (error) {
     console.error("Error reading contacts:", error.message);
-    return {
-      contacts: [],
-      page: 1,
-      limit: Number(limit),
-      totalItems: 0,
-      totalPages: 0,
-      hasNextPage: false,
-      hasPreviousPage: false
-    };
+    throw error;
   }
 }
 
@@ -54,7 +46,7 @@ async function getContactById(contactId) {
     return contact;
   } catch (error) {
     console.error("Error getting contact by ID:", error.message);
-    return null;
+    throw error;
   }
 }
 
@@ -68,7 +60,7 @@ async function removeContact(contactId) {
     return contact;
   } catch (error) {
     console.error("Error removing contact:", error.message);
-    return null;
+    throw error;
   }
 }
 
@@ -78,7 +70,7 @@ async function addContact(data) {
     return newContact;
   } catch (error) {
     console.error("Error adding contact:", error.message);
-    return null;
+    throw error;
   }
 }
 
@@ -93,18 +85,23 @@ async function updateContact(contactId, data) {
     return contact;
   } catch (error) {
     console.error("Error updating contact:", error.message);
-    return null;
+    throw error;
   }
 }
 
 async function updateStatusContact (contactId, { favorite }) {
-  const contact = await Contact.findByPk(contactId);
-  if (!contact) {
-    throw HttpError(404, "Not found");
+  try {
+    const contact = await Contact.findByPk(contactId);
+    if (!contact) {
+      throw HttpError(404, "Not found");
+    }
+    
+    await contact.update({ favorite });
+    return contact;
+  } catch (error) {
+    console.error("Error updating contact status:", error.message);
+    throw error;
   }
-  
-  await contact.update({ favorite });
-  return contact;
 };
 
 export default {
