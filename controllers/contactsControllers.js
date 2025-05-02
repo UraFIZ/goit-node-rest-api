@@ -29,7 +29,10 @@ export const getAllContacts = async (req, res, next) => {
 
 export const getContactById = async (req, res, next) => {
   try {
-    const contact = await contactsService.getContactById(req.params.id);
+    const { id: userId } = req.user;
+    const contactId = req.params.id;
+
+    const contact = await contactsService.getContactById(contactId, userId);
     res.status(200).json(contact);
   } catch (error) {
     next(error);
@@ -38,7 +41,11 @@ export const getContactById = async (req, res, next) => {
 
 export const removeContact = async (req, res, next) => {
   try {
-    const deletedContact = await contactsService.removeContact(req.params.id);
+    const { id: userId } = req.user;
+    const contactId = req.params.id;
+
+    const deletedContact = await contactsService.removeContact(contactId, userId);
+
     res.status(200).json(deletedContact);
   } catch (error) {
     next(error);
@@ -62,8 +69,11 @@ export const createContact = async (req, res, next) => {
 
 export const updateContactById = async (req, res, next) => {
   try {
-    const updatedContact = await contactsService.updateContact(req.params.id, req.body);
-    console.log(updatedContact);
+    const { id: userId } = req.user;
+    const contactId = req.params.id;
+
+    const updatedContact = await contactsService.updateContact(contactId, req.body, userId);
+
     res.status(200).json({
       id: updatedContact.id,
       name: updatedContact.name,
@@ -77,9 +87,11 @@ export const updateContactById = async (req, res, next) => {
 
 export const updateStatusContact = async (req, res, next) => {
   try {
+    const { id: userId } = req.user;
     const { contactId } = req.params;
     const { favorite } = req.body;
-    const contact = await contactsService.updateStatusContact(contactId, { favorite });
+
+    const contact = await contactsService.updateStatusContact(contactId, { favorite }, userId);
     res.json(contact);
   } catch (error) {
     next(error);

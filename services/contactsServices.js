@@ -37,12 +37,22 @@ async function listContacts(owner, query = {}) {
   }
 }
 
-async function getContactById(contactId) {
+async function getContactById(contactId, userId) {
   try {
-    const contact = await Contact.findByPk(contactId);
+    const sanitizedContactId = String(contactId).replace(/[^a-fA-F0-9]/g, '');
+    const sanitizedUserId = String(userId).replace(/[^a-fA-F0-9]/g, '');
+
+    const contact = await Contact.findOne({
+      where: { 
+        id: sanitizedContactId,
+        owner: sanitizedUserId
+      }
+    });
+
     if (!contact) {
       throw HttpError(404, "Not found");
     }
+
     return contact;
   } catch (error) {
     console.error("Error getting contact by ID:", error.message);
@@ -50,12 +60,23 @@ async function getContactById(contactId) {
   }
 }
 
-async function removeContact(contactId) {
+async function removeContact(contactId, userId) {
+
   try {
-    const contact = await Contact.findByPk(contactId);
+    const sanitizedContactId = String(contactId).replace(/[^a-fA-F0-9]/g, '');
+    const sanitizedUserId = String(userId).replace(/[^a-fA-F0-9]/g, '');
+
+    const contact = await Contact.findOne({
+      where: { 
+        id: sanitizedContactId,
+        owner: sanitizedUserId
+      }
+    });
+
     if (!contact) {
       throw HttpError(404, "Not found");
     }
+
     await contact.destroy();
     return contact;
   } catch (error) {
@@ -74,9 +95,18 @@ async function addContact(data) {
   }
 }
 
-async function updateContact(contactId, data) {
+async function updateContact(contactId, data, userId) {
   try {
-    const contact = await Contact.findByPk(contactId);
+    const sanitizedContactId = String(contactId).replace(/[^a-fA-F0-9]/g, '');
+    const sanitizedUserId = String(userId).replace(/[^a-fA-F0-9]/g, '');
+
+    const contact = await Contact.findOne({
+      where: { 
+        id: sanitizedContactId,
+        owner: sanitizedUserId // Add this condition to check ownership
+      }
+    });
+
     if (!contact) {
       throw HttpError(404, "Not found");
     }
@@ -89,9 +119,18 @@ async function updateContact(contactId, data) {
   }
 }
 
-async function updateStatusContact (contactId, { favorite }) {
+async function updateStatusContact (contactId, { favorite }, userId) {
   try {
-    const contact = await Contact.findByPk(contactId);
+    const sanitizedContactId = String(contactId).replace(/[^a-fA-F0-9]/g, '');
+    const sanitizedUserId = String(userId).replace(/[^a-fA-F0-9]/g, '');
+
+    const contact = await Contact.findOne({
+      where: { 
+        id: sanitizedContactId,
+        owner: sanitizedUserId // Add this condition to check ownership
+      }
+    });
+    
     if (!contact) {
       throw HttpError(404, "Not found");
     }
