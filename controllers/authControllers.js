@@ -48,3 +48,21 @@ export const updateSubscription = async (req, res, next) => {
     next(error);
   }
 };
+export const updateAvatar = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    
+    if (!req.file) {
+      return res.status(400).json({ message: "Avatar file is required" });
+    }
+
+    // Контролер тільки отримує запит, передає дані в сервіс і відправляє відповідь
+    const { path: tempUpload, originalname } = req.file;
+    
+    const result = await authService.updateAvatar(id, tempUpload, originalname);
+    
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
