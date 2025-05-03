@@ -3,18 +3,18 @@ import jwt from 'jsonwebtoken';
 import gravatar from 'gravatar';
 import fs from 'fs/promises';
 import path from 'path';
-import * as Jimp from 'jimp';
 import { v4 as uuidv4 } from 'uuid';
 
 import User from '../models/user.js';
 import HttpError from '../helpers/HttpError.js';
+import emailService from './emailService.js';
 
 const { JWT_SECRET = 'secret' } = process.env;
 
 async function register(userData) {
   const { email, password } = userData;
 
-  const sanitizedEmail = String(email).replace(/[^a-zA-Z0-9@.]/g, '');
+  const sanitizedEmail = String(email).replace(/[^a-zA-Z0-9@.+]/g, '');
 
   const existingUser = await User.findOne({ where: { email: sanitizedEmail } });
   if (existingUser) {
@@ -22,14 +22,17 @@ async function register(userData) {
   }
 
   const avatarURL = gravatar.url(email, { s: '250', d: 'identicon' });
-
   const hashedPassword = await bcrypt.hash(password, 10);
+  const verificationToken = uuidv4();
 
   const newUser = await User.create({
     email,
     password: hashedPassword,
-    avatarURL
+    avatarURL,
+    verificationToken
   });
+
+  await emailService.sendVerificationEmail(email, verificationToken);
 
   return {
     email: newUser.email,
@@ -41,11 +44,17 @@ async function register(userData) {
 async function login(userData) {
   const { email, password } = userData;
 
-  const sanitizedEmail = String(email).replace(/[^a-zA-Z0-9@.]/g, '');
+  const sanitizedEmail = String(email).replace(/[^a-zA-Z0-9@.+]/g, '');
+
+  console.log("Sanitized email:", sanitizedEmail);
 
   const user = await User.findOne({ where: { email: sanitizedEmail } });
   if (!user) {
     throw HttpError(401, "Email or password is wrong");
+  }
+
+  if (!user.verify) {
+    throw HttpError(401, "Email not verified");
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -65,6 +74,43 @@ async function login(userData) {
       subscription: user.subscription,
     },
   };
+}
+
+async function verifyEmail(verificationToken) {
+  const user = await User.findOne({ where: { verificationToken } });
+  
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+  
+  await user.update({ verify: true, verificationToken: null });
+  
+  return { message: "Verification successful" };
+}
+
+async function resendVerificationEmail(email) {
+  const sanitizedEmail = String(email).replace(/[^a-zA-Z0-9@.+]/g, '');
+  const user = await User.findOne({ where: { email: sanitizedEmail } });
+  
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+  
+  if (user.verify) {
+    throw HttpError(400, "Verification has already been passed");
+  }
+  
+  // Generate new verification token if needed
+  const verificationToken = user.verificationToken || uuidv4();
+  
+  if (!user.verificationToken) {
+    await user.update({ verificationToken });
+  }
+  
+  // Send verification email
+  await emailService.sendVerificationEmail(email, verificationToken);
+  
+  return { message: "Verification email sent" };
 }
 
 async function logout(userId) {
@@ -150,5 +196,7 @@ export default {
   getCurrent,
   authenticate,
   updateSubscription,
-  updateAvatar
+  updateAvatar,
+  verifyEmail,
+  resendVerificationEmail
 };

@@ -1,5 +1,30 @@
 import authService from '../services/authServices.js';
 
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const result = await authService.verifyEmail(verificationToken);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendVerificationEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ message: "missing required field email" });
+    }
+    
+    const result = await authService.resendVerificationEmail(email);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const register = async (req, res, next) => {
   try {
     const user = await authService.register(req.body);
